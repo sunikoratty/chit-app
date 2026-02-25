@@ -1,0 +1,25 @@
+Since you don't have Android Studio installed, you will find your APK on GitHub after you upload your code.
+
+I have built an "Automated Build Engine" into your project. Here is exactly how to find the APK to share:
+
+1. The Trigger
+First, you must upload (Push) your project to a repository on GitHub.
+
+2. The Build Process
+The moment you upload the code, look at the top menu of your GitHub repository:
+
+Click on the "Actions" tab.
+You will see a workflow running named "Build Android APK".
+Wait about 3–5 minutes for it to finish (it will turn green).
+3. Where to download the file
+Once the build is finished:
+
+Click on the name of that specific build (e.g., "Build Android APK #1").
+Scroll down to the bottom of that page to the "Artifacts" section.
+You will see a file named chits-mobile-debug-apk.
+Click it to download a ZIP file.
+4. How to share it
+Extract the ZIP: Inside, you will find app-debug.apk.
+Send it: You can send this file via WhatsApp, Google Drive, or Email to the person who is testing.
+Install: They just need to tap the file on their Android phone to install it.
+[!IMPORTANT] Because you are using LocalStorage as the backend, when your tester opens the app, they will see their own empty dashboard. If you want them to see the same data you entered, we will need to connect the app to Firebase (Cloud Storage) next.

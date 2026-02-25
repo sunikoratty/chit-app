@@ -1,0 +1,52 @@
+Guide: Building the Chits Mobile APK locally using Android Studio
+
+Whenever you make changes to the app's code (like fixing bugs or adding new features), you need to "sync" those changes into the Android app and generate a new APK.
+
+Follow these steps exactly to create the latest APK:
+
+---
+
+### Step 1: Sync the Latest Changes (Crucial Step)
+Before Android Studio even knows you changed anything, you have to compile the web code and send it to the Android folder.
+
+1. Open your terminal (or command prompt).
+2. Navigate to your project folder: `d:\2026-Projects\Chits-Mobile`
+3. Run the following command to build the web code and sync it to Android:
+   npm run build && npx cap sync android
+
+
+### Step 2: Open the Project in Android Studio
+1. Open **Android Studio** on your computer.
+2. Click on **Open** (or File > Open).
+3. Navigate to and select the `android` folder inside your project: 
+   `d:\2026-Projects\Chits-Mobile\android`
+   *(Make sure you select the "android" folder specifically, not just the Chits-Mobile folder!)*
+4. Wait for Android Studio to load. Look at the bottom-right corner of the screen and wait for the "Gradle Sync" loading bar to finish.
+
+
+### Step 3: Build the APK
+1. Once the loading bar is gone and Gradle has finished syncing, look at the top menu bar.
+2. Click on **Build**.
+3. In the dropdown, hover over **Build Bundle(s) / APK(s)**.
+4. Click on **Build APK(s)**.
+5. Android Studio will start building the app. You will see a progress bar at the bottom.
+
+
+### Step 4: Locate the APK File
+1. When the build is finished, a small notification will pop up in the bottom-right corner of Android Studio saying "Build APK(s) successfully".
+2. Click the blue **locate** link in that notification.
+3. A folder will pop up on your computer showing you the newly generated file.
+
+If you miss the popup, you can always find your APK manually by navigating to this folder on your computer:
+`d:\2026-Projects\Chits-Mobile\android\app\build\outputs\apk\debug\`
+
+The file you want is called: **app-debug.apk**
+
+
+### Step 5: Install on Phone
+1. Copy the `app-debug.apk` file.
+2. Send it to your tester's Android phone via WhatsApp, Google Drive, or email.
+3. They just need to tap the file to install the newest version of the app!
+
+---
+*(Note: I saved this as a .txt file rather than .odt so that it opens perfectly in Notepad or any basic text viewer without requiring Microsoft Word or LibreOffice. If you need it to be .odt, you can open this file in Word and "Save As" .odt)*
