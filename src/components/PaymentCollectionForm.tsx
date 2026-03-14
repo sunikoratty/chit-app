@@ -51,8 +51,10 @@ const PaymentCollectionForm: React.FC<Props> = ({ onClose }) => {
             // Look up the auction sheet from the PREVIOUS month
             const prevMonthSheet = auctionSheets.find(s => s.chitId === activeChit.id && s.month === (month - 1));
             if (prevMonthSheet) {
-                // Next month amount due: Monthly amount - last month's deduction per member (truncated calculation)
-                return prevMonthSheet.netMonthlyPay;
+                // Next month amount due: Monthly amount - last month's deduction per member
+                // Truncate logic explicitly executed dynamically here to ensure float safety vs local-storage
+                const accurateDeduction = prevMonthSheet.totalDividend / activeChit.totalMembers;
+                return Math.floor(activeChit.monthlyAmount - accurateDeduction);
             } else {
                 return -1; // Indicates prev month sheet not found
             }
