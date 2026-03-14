@@ -206,7 +206,7 @@ const ViewsTabs: React.FC<Props> = ({ onClose }) => {
                                                 <td className="p-4 font-bold text-slate-800">{getChitName(a.chitId)}</td>
                                                 <td className="p-4 font-medium text-slate-600">Month {a.month}</td>
                                                 <td className="p-4 text-slate-600">₹ {a.totalDividend.toLocaleString()}</td>
-                                                <td className="p-4 text-blue-600 font-bold">₹ {a.deductionPerMember.toLocaleString()}</td>
+                                                <td className="p-4 text-blue-600 font-bold">₹ {Number.isInteger(a.deductionPerMember) ? a.deductionPerMember.toLocaleString() : a.deductionPerMember.toFixed(2)}</td>
                                                 <td className="p-4 text-emerald-600 font-black">₹ {a.netMonthlyPay.toLocaleString()}</td>
                                             </tr>
                                         ))

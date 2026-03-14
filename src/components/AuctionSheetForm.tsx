@@ -82,8 +82,8 @@ const AuctionSheetForm: React.FC<Props> = ({ onClose }) => {
     let netMonthlyPay = 0;
 
     if (activeChit && activeChit.totalMembers > 0) {
-        deductionPerMember = Math.round(totalDividend / activeChit.totalMembers);
-        netMonthlyPay = activeChit.monthlyAmount - deductionPerMember;
+        deductionPerMember = totalDividend / activeChit.totalMembers;
+        netMonthlyPay = Math.floor(activeChit.monthlyAmount - deductionPerMember);
     }
 
     const handleSave = (e: React.FormEvent) => {
@@ -242,7 +242,7 @@ const AuctionSheetForm: React.FC<Props> = ({ onClose }) => {
                             </div>
                             <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex flex-col justify-between">
                                 <span className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-1 shadow-sm">Ded. per Member</span>
-                                <span className="text-lg font-bold text-blue-600">₹ {deductionPerMember.toLocaleString()}</span>
+                                <span className="text-lg font-bold text-blue-600">₹ {Number.isInteger(deductionPerMember) ? deductionPerMember.toLocaleString() : deductionPerMember.toFixed(2)}</span>
                             </div>
                             <div className="bg-emerald-500 p-4 rounded-xl shadow-lg shadow-emerald-200 flex flex-col justify-between transform transition-transform hover:scale-105">
                                 <span className="text-xs font-bold text-emerald-100 uppercase tracking-widest mb-1">Net Monthly Pay</span>
