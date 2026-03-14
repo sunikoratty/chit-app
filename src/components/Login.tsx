@@ -1,22 +1,24 @@
 import React, { useState } from 'react';
-import { LogIn, ShieldCheck } from 'lucide-react';
+import { LogIn, ShieldCheck, UserPlus } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { useStore } from '../store';
 
 interface LoginProps {
-    onLogin: (username: string) => void;
+    onRegister: () => void;
 }
 
-const Login: React.FC<LoginProps> = ({ onLogin }) => {
+const Login: React.FC<LoginProps> = ({ onRegister }) => {
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
 
-    const handleSubmit = (e: React.FormEvent) => {
+    const login = useStore((state) => state.login);
+
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (username === 'Admin' && password === 'admin') {
-            onLogin(username);
-        } else {
+        const success = login(username, password);
+        if (!success) {
             import('react-hot-toast').then(({ toast }) => {
-                toast.error('Invalid credentials! Use Admin / admin');
+                toast.error('Invalid credentials!');
             });
         }
     };
@@ -32,7 +34,7 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
                     <div className="w-16 h-16 bg-primary-600 rounded-2xl flex items-center justify-center mb-4 shadow-lg shadow-primary-200">
                         <ShieldCheck className="w-10 h-10 text-white" />
                     </div>
-                    <h1 className="text-2xl font-bold text-slate-900">Chits Mobile</h1>
+                    <h1 className="text-2xl font-bold text-slate-900">SWChits</h1>
                     <p className="text-slate-500">Manage your chit funds with ease</p>
                 </div>
 
@@ -66,8 +68,19 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
                     </button>
                 </form>
 
-                <div className="mt-8 pt-6 border-t border-slate-100 text-center">
-                    <p className="text-sm text-slate-400">© 2026 Chits Mobile Management</p>
+                <div className="mt-6 pt-5 border-t border-slate-100 text-center">
+                    <p className="text-sm text-slate-500 mb-3">New user? Create an account to get started.</p>
+                    <button
+                        onClick={onRegister}
+                        className="w-full btn-secondary flex items-center justify-center gap-2 py-3 border-primary-200 text-primary-700 hover:bg-primary-50"
+                    >
+                        <UserPlus className="w-5 h-5" />
+                        Register Here
+                    </button>
+                </div>
+
+                <div className="mt-4 text-center">
+                    <p className="text-xs text-slate-400">© 2026 SWChits Management</p>
                 </div>
             </motion.div>
         </div>

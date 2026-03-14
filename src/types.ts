@@ -43,7 +43,19 @@ export interface PaymentCollection {
     submissionTimestamp: string;
 }
 
+export interface Prize {
+    id: string;
+    chitId: string;
+    amount: number;
+    date: string;
+    type: 'lucky_draw' | 'auction';
+}
+
 export interface User {
     username: string;
+    name?: string;
+    password?: string;
+    pin?: string;
     isLoggedIn: boolean;
+    isRegistered: boolean;
 }

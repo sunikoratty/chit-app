@@ -9,9 +9,9 @@ interface Props {
 }
 
 const ViewsTabs: React.FC<Props> = ({ onClose }) => {
-    const { chits, auctionSheets, payments, updateChit, deleteChit } = useStore();
+    const { chits, auctionSheets, payments, prizes, updateChit, deleteChit, deletePrize } = useStore();
 
-    const [activeTab, setActiveTab] = useState<'chits' | 'auctions' | 'payments'>('chits');
+    const [activeTab, setActiveTab] = useState<'chits' | 'auctions' | 'payments' | 'prizes'>('chits');
 
     // Filters
     const [filterChitId, setFilterChitId] = useState<string>('');
@@ -45,6 +45,10 @@ const ViewsTabs: React.FC<Props> = ({ onClose }) => {
         });
     }, [payments, filterChitId, filterMonthStr]);
 
+    const filteredPrizes = useMemo(() => {
+        return prizes.filter(p => filterChitId ? p.chitId === filterChitId : true);
+    }, [prizes, filterChitId]);
+
     const getChitName = (id: string) => chits.find(c => c.id === id)?.name || 'Unknown Chit';
 
     const handleDeleteConfirm = () => {
@@ -61,7 +65,12 @@ const ViewsTabs: React.FC<Props> = ({ onClose }) => {
     const handleEditSave = (e: React.FormEvent) => {
         e.preventDefault();
         if (chitToEdit) {
-            updateChit(chitToEdit);
+            const updatedChit = {
+                ...chitToEdit,
+                totalChitValue: chitToEdit.totalMembers * chitToEdit.monthlyAmount,
+                commissionAmount: ((chitToEdit.totalMembers * chitToEdit.monthlyAmount) * chitToEdit.commissionPercent) / 100
+            };
+            updateChit(updatedChit);
             toast.success("Chit updated successfully.");
             setChitToEdit(null);
         }
@@ -126,16 +135,16 @@ const ViewsTabs: React.FC<Props> = ({ onClose }) => {
 
             {/* Tabs */}
             <div className="flex gap-2 mb-6 border-b border-slate-200 pb-px overflow-x-auto hide-scrollbar">
-                {(['chits', 'auctions', 'payments'] as const).map(tab => (
+                {(['chits', 'auctions', 'payments', 'prizes'] as const).map(tab => (
                     <button
                         key={tab}
                         onClick={() => setActiveTab(tab)}
                         className={`px-6 py-3 font-bold text-sm uppercase tracking-wider transition-colors border-b-2 whitespace-nowrap ${activeTab === tab
-                                ? 'border-primary-600 text-primary-700 bg-primary-50/50 rounded-t-xl'
-                                : 'border-transparent text-slate-500 hover:text-slate-700 hover:bg-slate-50 rounded-t-xl'
+                            ? 'border-primary-600 text-primary-700 bg-primary-50/50 rounded-t-xl'
+                            : 'border-transparent text-slate-500 hover:text-slate-700 hover:bg-slate-50 rounded-t-xl'
                             }`}
                     >
-                        {tab === 'chits' ? 'Registered Chits (CRUD)' : tab === 'auctions' ? 'Auction Reports' : 'Payment Collection'}
+                        {tab === 'chits' ? 'Registered Chits' : tab === 'auctions' ? 'Auction Reports' : tab === 'payments' ? 'Payment Collection' : 'Prize Details'}
                     </button>
                 ))}
             </div>
@@ -261,6 +270,55 @@ const ViewsTabs: React.FC<Props> = ({ onClose }) => {
                         </div>
                     </div>
                 )}
+
+                {activeTab === 'prizes' && (
+                    <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+                        <div className="overflow-x-auto">
+                            <table className="w-full text-left border-collapse">
+                                <thead>
+                                    <tr className="bg-slate-50 border-b border-slate-200">
+                                        <th className="p-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Chit Name</th>
+                                        <th className="p-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Amount</th>
+                                        <th className="p-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Date</th>
+                                        <th className="p-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Type</th>
+                                        <th className="p-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {filteredPrizes.length === 0 ? (
+                                        <tr><td colSpan={5} className="p-8 text-center text-slate-500">No prize records found matching the criteria.</td></tr>
+                                    ) : (
+                                        filteredPrizes.map(p => (
+                                            <tr key={p.id} className="border-b border-slate-100 hover:bg-slate-50 transition-colors">
+                                                <td className="p-4 font-bold text-slate-800">{getChitName(p.chitId)}</td>
+                                                <td className="p-4 font-black text-primary-600">₹ {p.amount.toLocaleString()}</td>
+                                                <td className="p-4 text-slate-600">{p.date}</td>
+                                                <td className="p-4">
+                                                    <span className={`px-2 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider ${p.type === 'lucky_draw' ? 'bg-amber-100 text-amber-700' : 'bg-purple-100 text-purple-700'}`}>
+                                                        {p.type.replace('_', ' ')}
+                                                    </span>
+                                                </td>
+                                                <td className="p-4">
+                                                    <button
+                                                        onClick={() => {
+                                                            if (window.confirm('Are you sure you want to delete this prize record?')) {
+                                                                deletePrize(p.id);
+                                                                toast.success('Prize record deleted');
+                                                            }
+                                                        }}
+                                                        className="text-red-500 hover:text-red-700 p-2"
+                                                    >
+                                                        <Trash2 className="w-4 h-4" />
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                        ))
+                                    )}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                )}
             </div>
 
             {/* Modals */}
@@ -329,12 +387,33 @@ const ViewsTabs: React.FC<Props> = ({ onClose }) => {
                                     <input type="number" className="input-field" value={chitToEdit.commissionPercent} onChange={e => setChitToEdit({ ...chitToEdit, commissionPercent: Number(e.target.value) })} required />
                                 </div>
                                 <div>
+                                    <label className="block text-sm font-bold text-slate-700 mb-1">Duration (Months)</label>
+                                    <input type="number" className="input-field" value={chitToEdit.durationMonths} onChange={e => setChitToEdit({ ...chitToEdit, durationMonths: Number(e.target.value) })} required />
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-bold text-slate-700 mb-1">Divisions</label>
+                                    <input type="number" className="input-field" value={chitToEdit.divisions} onChange={e => setChitToEdit({ ...chitToEdit, divisions: Number(e.target.value) })} />
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-bold text-slate-700 mb-1">Lucky Draws / Month</label>
+                                    <input type="number" className="input-field" value={chitToEdit.luckyDrawsPerMonth} onChange={e => setChitToEdit({ ...chitToEdit, luckyDrawsPerMonth: Number(e.target.value) })} />
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-bold text-slate-700 mb-1">Auctions / Month</label>
+                                    <input type="number" className="input-field" value={chitToEdit.auctionsPerMonth} onChange={e => setChitToEdit({ ...chitToEdit, auctionsPerMonth: Number(e.target.value) })} />
+                                </div>
+                                <div>
                                     <label className="block text-sm font-bold text-slate-700 mb-1">Status</label>
                                     <select className="input-field bg-white" value={chitToEdit.status} onChange={e => setChitToEdit({ ...chitToEdit, status: e.target.value as any })}>
                                         <option value="active">Active</option>
                                         <option value="completed">Completed</option>
                                     </select>
                                 </div>
+                            </div>
+
+                            <div className="bg-slate-50 p-4 rounded-xl border border-slate-100 flex justify-between items-center mb-4 mt-2">
+                                <span className="font-bold text-slate-700">Total Chit Value</span>
+                                <span className="text-xl font-black text-primary-700">₹ {(chitToEdit.totalMembers * chitToEdit.monthlyAmount).toLocaleString()}</span>
                             </div>
 
                             <div className="pt-4 flex justify-end gap-3 border-t border-slate-100">

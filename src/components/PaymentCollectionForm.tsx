@@ -21,6 +21,19 @@ const PaymentCollectionForm: React.FC<Props> = ({ onClose }) => {
 
     const activeChit = useMemo(() => chits.find(c => c.id === selectedChitId), [chits, selectedChitId]);
 
+    // Calculate next month to be paid
+    const nextMonthToPay = useMemo(() => {
+        if (!activeChit) return 1;
+        const chitPayments = payments.filter(p => p.chitId === activeChit.id);
+        if (chitPayments.length === 0) return 1;
+        const maxMonth = Math.max(...chitPayments.map(p => p.month));
+        return Math.min(maxMonth + 1, activeChit.durationMonths);
+    }, [activeChit, payments]);
+
+    React.useEffect(() => {
+        setMonth(nextMonthToPay);
+    }, [nextMonthToPay]);
+
     // Find if a payment already exists for this chit and month
     const existingPayment = useMemo(() => {
         if (!activeChit) return null;
@@ -32,15 +45,16 @@ const PaymentCollectionForm: React.FC<Props> = ({ onClose }) => {
         if (!activeChit) return 0;
 
         if (month === 1) {
-            // First month has no auction, full amount is expected
+            // First month has no previous auction deduction, full amount is expected
             return activeChit.monthlyAmount;
         } else {
-            // Look up auction sheet
-            const sheet = auctionSheets.find(s => s.chitId === activeChit.id && s.month === month);
-            if (sheet) {
-                return sheet.netMonthlyPay;
+            // Look up the auction sheet from the PREVIOUS month
+            const prevMonthSheet = auctionSheets.find(s => s.chitId === activeChit.id && s.month === (month - 1));
+            if (prevMonthSheet) {
+                // Next month amount due: Monthly amount - last month's deduction per member
+                return activeChit.monthlyAmount - prevMonthSheet.deductionPerMember;
             } else {
-                return -1; // Indicates sheet not found
+                return -1; // Indicates prev month sheet not found
             }
         }
     }, [activeChit, month, auctionSheets]);
@@ -92,7 +106,7 @@ const PaymentCollectionForm: React.FC<Props> = ({ onClose }) => {
         }
 
         if (amountDue === -1) {
-            toast.error(`Please calculate the Auction Sheet for Month ${month} first.`);
+            toast.error(`Please calculate the Auction Sheet for Month ${month - 1} first.`);
             return;
         }
 
@@ -134,7 +148,7 @@ const PaymentCollectionForm: React.FC<Props> = ({ onClose }) => {
                         <ArrowLeft className="w-5 h-5 group-hover:-translate-x-1 transition-transform" />
                     </button>
                     <h1 className="text-2xl font-bold text-slate-900 flex items-center gap-2">
-                        Payment Collection
+                        Payment Record
                     </h1>
                 </div>
                 <button onClick={onClose} className="btn-secondary p-2 text-red-500 hover:bg-red-50 hover:border-red-200 transition-colors" title="Close">
@@ -161,7 +175,14 @@ const PaymentCollectionForm: React.FC<Props> = ({ onClose }) => {
                         </select>
                     </div>
                     <div>
-                        <label className="block text-sm font-bold text-slate-700 mb-2">Month No.</label>
+                        <div className="flex justify-between mb-2 items-center">
+                            <label className="block text-sm font-bold text-slate-700">Month No.</label>
+                            {activeChit && (
+                                <span className="text-xs bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full font-bold">
+                                    Next: {nextMonthToPay}
+                                </span>
+                            )}
+                        </div>
                         <select
                             className="input-field cursor-pointer bg-white border-slate-300"
                             value={month}
@@ -186,8 +207,8 @@ const PaymentCollectionForm: React.FC<Props> = ({ onClose }) => {
                     {amountDue === -1 ? (
                         <div className="p-6 bg-red-50 text-red-700 rounded-2xl border border-red-200 flex flex-col items-center justify-center text-center shadow-inner">
                             <Calculator className="w-10 h-10 mb-3 text-red-400" />
-                            <h3 className="text-lg font-bold mb-1">Auction Sheet Missing</h3>
-                            <p className="text-sm font-medium">The Auction/Lucky Draw sheet for <b>Month {month}</b> has not been generated yet. Please calculate it first to determine the Net Monthly Pay.</p>
+                            <h3 className="text-lg font-bold mb-1">Previous Month's Auction Sheet Missing</h3>
+                            <p className="text-sm font-medium">The Auction/Lucky Draw sheet for <b>Month {month - 1}</b> has not been generated yet. Please calculate it first to determine the deduction for this month's payment.</p>
                         </div>
                     ) : (
                         <div className="card shadow-sm border-slate-200 space-y-6">

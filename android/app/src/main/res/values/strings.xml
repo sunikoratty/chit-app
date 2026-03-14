@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='utf-8'?>
 <resources>
-    <string name="app_name">Chits Mobile</string>
-    <string name="title_activity_main">Chits Mobile</string>
+    <string name="app_name">SWChits</string>
+    <string name="title_activity_main">SWChits</string>
     <string name="package_name">com.chits.mobile</string>
     <string name="custom_url_scheme">com.chits.mobile</string>
 </resources>

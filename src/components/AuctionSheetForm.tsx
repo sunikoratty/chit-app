@@ -12,9 +12,22 @@ interface Props {
 const AuctionSheetForm: React.FC<Props> = ({ onClose }) => {
     const { chits, saveAuctionSheet, auctionSheets } = useStore();
     const [selectedChitId, setSelectedChitId] = useState<string>('');
-    const [month, setMonth] = useState<number>(2);
+    const [month, setMonth] = useState<number>(1);
 
     const activeChit = useMemo(() => chits.find(c => c.id === selectedChitId), [chits, selectedChitId]);
+
+    // Calculate next auction month
+    const nextAuctionMonth = useMemo(() => {
+        if (!activeChit) return 1;
+        const chitSheets = auctionSheets.filter(s => s.chitId === activeChit.id);
+        if (chitSheets.length === 0) return 1;
+        const maxMonth = Math.max(...chitSheets.map(s => s.month));
+        return Math.min(maxMonth + 1, activeChit.durationMonths);
+    }, [activeChit, auctionSheets]);
+
+    React.useEffect(() => {
+        setMonth(nextAuctionMonth);
+    }, [nextAuctionMonth]);
 
     // Initialize events based on the selected chit
     const initialEvents = useMemo<LelamEvent[]>(() => {
@@ -144,17 +157,24 @@ const AuctionSheetForm: React.FC<Props> = ({ onClose }) => {
                         </select>
                     </div>
                     <div>
-                        <label className="block text-sm font-bold text-slate-700 mb-2">Month No.</label>
+                        <div className="flex justify-between mb-2 items-center">
+                            <label className="block text-sm font-bold text-slate-700">Month No.</label>
+                            {activeChit && (
+                                <span className="text-xs bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full font-bold">
+                                    Next: {nextAuctionMonth}
+                                </span>
+                            )}
+                        </div>
                         <select
                             className="input-field cursor-pointer bg-slate-50 border-slate-300"
                             value={month}
                             onChange={(e) => setMonth(parseInt(e.target.value))}
                             disabled={!activeChit}
                         >
-                            {activeChit && Array.from({ length: activeChit.durationMonths - 1 }, (_, i) => i + 2).map(m => (
+                            {activeChit && Array.from({ length: activeChit.durationMonths }, (_, i) => i + 1).map(m => (
                                 <option key={m} value={m}>Month {m}</option>
                             ))}
-                            {!activeChit && <option value="2">Month 2</option>}
+                            {!activeChit && <option value="1">Month 1</option>}
                         </select>
                     </div>
                 </div>
