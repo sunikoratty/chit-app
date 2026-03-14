@@ -76,7 +76,7 @@ const PaymentCollectionForm: React.FC<Props> = ({ onClose }) => {
 
         // Actually the user stated:
         // Amount Due - [Amount Collected] = Balance / Status
-        balance = amountDue - amountCollected;
+        balance = Math.floor(amountDue) - amountCollected;
 
         if (balance <= 0 && amountCollected > 0) {
             statusText = 'Fully Paid';
@@ -125,7 +125,7 @@ const PaymentCollectionForm: React.FC<Props> = ({ onClose }) => {
             dateOfPayment,
             chitId: activeChit.id,
             month,
-            amountDue,
+            amountDue: Math.floor(amountDue),
             amountCollected,
             receivedBy,
             status: balance <= 0 ? 'paid' : 'partially_paid',
@@ -232,7 +232,7 @@ const PaymentCollectionForm: React.FC<Props> = ({ onClose }) => {
                                     <input
                                         type="text"
                                         className="input-field bg-slate-100 font-bold text-slate-700 cursor-not-allowed"
-                                        value={`₹ ${amountDue.toLocaleString()}`}
+                                        value={`₹ ${Math.floor(amountDue).toLocaleString()}`}
                                         readOnly
                                     />
                                     <p className="text-xs text-slate-400 mt-1 font-bold pl-1 uppercase tracking-wide">Calculated from Net Monthly Pay</p>
